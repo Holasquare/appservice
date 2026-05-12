@@ -1,30 +1,43 @@
-name: Deploy React App to Azure
+name: Deploy to Azure Web App
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      # 1. Checkout repo
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - name: Setup Node
+      # 2. Setup Node
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 18
+          cache: npm
 
-      - name: Install deps
+      # 3. Install dependencies
+      - name: Install dependencies
         run: npm install
 
-      - name: Build app
+      # 4. Build Vite app
+      - name: Build project
         run: npm run build
 
-      - name: Deploy
+      # 5. Azure Login (FIXES YOUR ERROR)
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      # 6. Deploy to Azure Web App
+      - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
           app-name: NewAppDemo
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
           package: dist
